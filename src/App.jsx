@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { HelmetProvider } from 'react-helmet-async'
+import AuthGuard from './components/dashboard/AuthGuard'
 import DashboardLayout from './pages/dashboard/DashboardLayout'
 import OverviewPage from './pages/dashboard/OverviewPage'
 import ListingsPage from './pages/dashboard/ListingsPage'
@@ -14,7 +15,14 @@ export default function App() {
   return (
     <HelmetProvider>
       <Routes>
-        <Route path="/dashboard" element={<DashboardLayout />}>
+        <Route
+          path="/dashboard"
+          element={
+            <AuthGuard>
+              <DashboardLayout />
+            </AuthGuard>
+          }
+        >
           <Route index element={<OverviewPage />} />
           <Route path="listings" element={<ListingsPage />} />
           <Route path="chatbot" element={<ChatbotAnalyticsPage />} />
