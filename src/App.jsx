@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { HelmetProvider } from 'react-helmet-async'
 import AuthGuard from './components/dashboard/AuthGuard'
+import AuthCallbackPage from './pages/AuthCallbackPage'
 import DashboardLayout from './pages/dashboard/DashboardLayout'
 import OverviewPage from './pages/dashboard/OverviewPage'
 import ListingsPage from './pages/dashboard/ListingsPage'
@@ -15,6 +16,10 @@ export default function App() {
   return (
     <HelmetProvider>
       <Routes>
+        {/* Auth callback — no guard, handles token from URL */}
+        <Route path="/auth/callback" element={<AuthCallbackPage />} />
+
+        {/* Dashboard — protected */}
         <Route
           path="/dashboard"
           element={
