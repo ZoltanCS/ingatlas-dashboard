@@ -20,9 +20,8 @@ export default function AuthGuard({ children }) {
   }
 
   if (!user) {
-    const currentUrl = window.location.href
-    const returnUrl = encodeURIComponent(currentUrl)
-    window.location.href = `https://auth.ingatlas.hu/login?redirect_back=${returnUrl}`
+    const returnUrl = encodeURIComponent(window.location.href)
+    window.location.href = `https://auth.ingatlas.hu/silent-auth?redirect_back=${returnUrl}`
     return null
   }
 
