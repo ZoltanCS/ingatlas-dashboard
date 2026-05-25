@@ -1,9 +1,7 @@
 import { useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 
 export default function AuthCallbackPage() {
-  const navigate = useNavigate()
   const hasRun = useRef(false)
 
   useEffect(() => {
@@ -11,6 +9,14 @@ export default function AuthCallbackPage() {
     hasRun.current = true
 
     const handle = async () => {
+      // Give Supabase a moment to auto-detect tokens from URL
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session) {
+        window.location.replace('/dashboard')
+        return
+      }
+
+      // If no session yet, try manual token exchange as fallback
       const params = new URLSearchParams(window.location.search)
       const accessToken = params.get('access_token')
       const refreshToken = params.get('refresh_token')
@@ -21,23 +27,17 @@ export default function AuthCallbackPage() {
           refresh_token: refreshToken,
         })
         if (!error) {
-          window.history.replaceState({}, document.title, '/dashboard')
-          navigate('/dashboard', { replace: true })
+          window.location.replace('/dashboard')
           return
         }
       }
 
-      navigate('/dashboard', { replace: true })
+      // Nothing worked — go to dashboard anyway (AuthGuard handles auth)
+      window.location.replace('/dashboard')
     }
 
     handle()
-  }, [navigate])
+  }, [])
 
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
-      <div style={{ textAlign: 'center', color: '#aaa', fontFamily: '"JetBrains Mono", monospace', fontSize: '12px' }}>
-        Bejelentkezés folyamatban...
-      </div>
-    </div>
-  )
+  return null
 }
