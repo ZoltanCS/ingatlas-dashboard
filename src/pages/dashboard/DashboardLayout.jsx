@@ -1,14 +1,29 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Outlet } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import Sidebar from '../../components/dashboard/Sidebar'
 import useAuth from '../../hooks/useAuth'
 import useMobile from '../../hooks/useMobile'
+import { supabase } from '../../lib/supabase'
+
+function handleLogout() {
+  supabase.auth.signOut().then(() => {
+    const returnUrl = encodeURIComponent(window.location.origin + '/dashboard')
+    window.location.href = `https://auth.ingatlas.hu/logout?redirect_back=${returnUrl}`
+  })
+}
 
 export default function DashboardLayout() {
   const { user } = useAuth()
   const isMobile = useMobile()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search)
+    if (p.get('signed_out') === '1') {
+      window.history.replaceState({}, document.title, window.location.pathname)
+    }
+  }, [])
 
   const userInitials = user?.email
     ? user.email.slice(0, 2).toUpperCase()
@@ -77,6 +92,20 @@ export default function DashboardLayout() {
                 </div>
                 <span style={{ color: '#666' }}>{user?.email || ''}</span>
               </div>
+              <button
+                onClick={handleLogout}
+                style={{
+                  fontSize: '10px', fontWeight: 400, fontFamily: 'inherit',
+                  background: 'none', border: '0.5px solid rgba(0,0,0,0.15)',
+                  color: '#888', padding: '5px 12px', borderRadius: '4px',
+                  cursor: 'pointer', letterSpacing: '0.06em',
+                  transition: 'all 0.15s ease',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.color = '#0a0a0a'; e.currentTarget.style.borderColor = '#0a0a0a' }}
+                onMouseLeave={e => { e.currentTarget.style.color = '#888'; e.currentTarget.style.borderColor = 'rgba(0,0,0,0.15)' }}
+              >
+                Kijelentkezés
+              </button>
             </div>
           </header>
 
