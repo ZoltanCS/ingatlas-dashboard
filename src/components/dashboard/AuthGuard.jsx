@@ -1,4 +1,3 @@
-import { Navigate } from 'react-router-dom'
 import useAuth from '../../hooks/useAuth'
 
 export default function AuthGuard({ children }) {
@@ -21,7 +20,7 @@ export default function AuthGuard({ children }) {
 
   if (!user) {
     const returnUrl = encodeURIComponent(window.location.href)
-    window.location.href = `https://auth.ingatlas.hu/silent-auth?redirect_back=${returnUrl}`
+    window.location.href = `https://auth.ingatlas.hu/login?redirect_back=${returnUrl}`
     return null
   }
 
