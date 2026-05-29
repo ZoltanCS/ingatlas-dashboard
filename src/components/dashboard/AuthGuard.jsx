@@ -1,9 +1,20 @@
+import { useState, useEffect } from 'react'
 import useAuth from '../../hooks/useAuth'
 
 export default function AuthGuard({ children }) {
   const { user, loading } = useAuth()
+  const [waiting, setWaiting] = useState(false)
 
-  if (loading) {
+  useEffect(() => {
+    if (sessionStorage.getItem('auth_ok') === '1') {
+      sessionStorage.removeItem('auth_ok')
+      setWaiting(true)
+      const t = setTimeout(() => setWaiting(false), 200)
+      return () => clearTimeout(t)
+    }
+  }, [])
+
+  if (loading || waiting) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
         <div style={{
@@ -19,8 +30,7 @@ export default function AuthGuard({ children }) {
   }
 
   if (!user) {
-    const returnUrl = encodeURIComponent(window.location.href)
-    window.location.href = `https://auth.ingatlas.hu/login?redirect_back=${returnUrl}`
+    window.location.href = `https://auth.ingatlas.hu/login?redirect_back=${encodeURIComponent(window.location.href)}`
     return null
   }
 
