@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 
+const AUTH_API = 'https://auth.ingatlas.hu/silent-auth?json=1'
+
 export default function useAuth() {
   const [session, setSession] = useState(null)
   const [user, setUser] = useState(null)
@@ -11,6 +13,7 @@ export default function useAuth() {
     mounted.current = true
 
     const load = async () => {
+      // 1. Check localStorage first
       try {
         const { data: { session: s } } = await supabase.auth.getSession()
         if (!mounted.current) return
@@ -21,6 +24,31 @@ export default function useAuth() {
           return
         }
       } catch { /* ignore */ }
+
+      // 2. No local session — check auth server via JSON API
+      try {
+        const res = await fetch(AUTH_API, { credentials: 'include' })
+        if (!mounted.current) return
+        if (res.ok) {
+          const data = await res.json()
+          if (data.session) {
+            const { error } = await supabase.auth.setSession({
+              access_token: data.session.accessToken,
+              refresh_token: data.session.refreshToken,
+            })
+            if (!error) {
+              const { data: { session: s } } = await supabase.auth.getSession()
+              if (!mounted.current) return
+              if (s) {
+                setSession(s)
+                setUser(s.user ?? null)
+                setLoading(false)
+                return
+              }
+            }
+          }
+        }
+      } catch { /* network error */ }
 
       if (!mounted.current) return
       setSession(null)
